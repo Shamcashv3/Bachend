@@ -18,8 +18,19 @@ db.exec(`
     timezone TEXT,
     referrer TEXT,
     page TEXT,
+    latitude REAL,
+    longitude REAL,
+    location_accuracy REAL,
     created_at TEXT DEFAULT (datetime('now'))
   )
 `);
+
+// يضيف الأعمدة الجديدة إن كانت قاعدة البيانات قديمة (أُنشئت قبل إضافة دعم GPS)
+const existingColumns = db.prepare(`PRAGMA table_info(visitors)`).all().map(c => c.name);
+for (const [col, type] of [['latitude', 'REAL'], ['longitude', 'REAL'], ['location_accuracy', 'REAL']]) {
+  if (!existingColumns.includes(col)) {
+    db.exec(`ALTER TABLE visitors ADD COLUMN ${col} ${type}`);
+  }
+}
 
 module.exports = db;
