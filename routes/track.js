@@ -61,12 +61,12 @@ router.post('/track', async (req, res) => {
 
     const geo = await lookupIp(ip);
 
-    const { language, screen, timezone, referrer, page } = req.body || {};
+    const { language, screen, timezone, referrer, page, latitude, longitude, accuracy } = req.body || {};
 
     const stmt = db.prepare(`
       INSERT INTO visitors
-        (ip, country, city, user_agent, device_type, browser, os, language, screen_size, timezone, referrer, page)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (ip, country, city, user_agent, device_type, browser, os, language, screen_size, timezone, referrer, page, latitude, longitude, location_accuracy)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
@@ -81,7 +81,10 @@ router.post('/track', async (req, res) => {
       screen || null,
       timezone || null,
       referrer || null,
-      page || null
+      page || null,
+      typeof latitude === 'number' ? latitude : null,
+      typeof longitude === 'number' ? longitude : null,
+      typeof accuracy === 'number' ? accuracy : null
     );
 
     res.status(200).json({ ok: true });
